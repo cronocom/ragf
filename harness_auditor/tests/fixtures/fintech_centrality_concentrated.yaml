@@ -1,0 +1,112 @@
+# ============================================================================
+# Centrality-concentrated fixture for CC-11 · Constraint Centrality
+# ----------------------------------------------------------------------------
+# Ontology designed to make exactly ONE constraint dominate the SUPERSEDES
+# PageRank. Five constraints share a single base:
+#
+#     supersessor_a ─┐
+#     supersessor_b ─┼─→ base_rule
+#     supersessor_c ─┤
+#     supersessor_d ─┘
+#
+# Classic PageRank in NATURAL orientation: `base_rule` accumulates all the
+# incoming SUPERSEDES, the four supersessors receive nothing in return.
+# With damping 0.85 over 5 nodes, base_rule's score lands around 0.13 while
+# the supersessors hover near 0.03 — a ratio of ~2.6× the graph mean, well
+# above the default CC11_THRESHOLD_RATIO=1.3.
+#
+# This fixture must satisfy all OTHER CCs so the only failure under audit
+# is CC-11 (advisory) → verdict REQUIRES_REVIEW. That is the realistic
+# scenario the criterion is intended to surface.
+# ============================================================================
+
+schema_version: "1.0"
+
+domain:
+  name: fintech_centrality
+  version: 1.0.0
+  description: "Synthetic fixture isolating CC-11 — one central base constraint."
+
+regulations:
+  - code: REG_BASIC
+    name: "Baseline reg for centrality fixture"
+    description: "Single regulation anchoring all constraints in this fixture."
+
+verbs:
+  - name: do_payment
+    description: "Synthetic verb to exercise CC-11 in isolation."
+    risk_level: low
+    min_amm_level: 1
+    requires_human_approval: false
+    must_satisfy:
+      - REG_BASIC
+    payload_schema:
+      - name: amount
+        type: float
+        required: true
+
+constraints:
+  # ---- The base — overridden by all four supersessors below ----
+  - name: base_rule
+    type: threshold
+    verb: do_payment
+    parameter: amount
+    operator: gte
+    value: 0.0
+    decision_if_violated: ESCALATE
+    regulation: REG_BASIC
+    reason: "Baseline rule — central node of the SUPERSEDES subgraph."
+    severity: high
+    precedence_level: 10
+
+  - name: supersessor_a
+    type: supersedes_condition
+    verb: do_payment
+    parameter: amount
+    operator: gte
+    value: 100.0
+    decision_if_violated: ESCALATE
+    regulation: REG_BASIC
+    reason: "Override A — applies when amount >= 100."
+    severity: medium
+    precedence_level: 20
+    supersedes: base_rule
+
+  - name: supersessor_b
+    type: supersedes_condition
+    verb: do_payment
+    parameter: amount
+    operator: gte
+    value: 200.0
+    decision_if_violated: ESCALATE
+    regulation: REG_BASIC
+    reason: "Override B — applies when amount >= 200."
+    severity: medium
+    precedence_level: 30
+    supersedes: base_rule
+
+  - name: supersessor_c
+    type: supersedes_condition
+    verb: do_payment
+    parameter: amount
+    operator: gte
+    value: 300.0
+    decision_if_violated: ESCALATE
+    regulation: REG_BASIC
+    reason: "Override C — applies when amount >= 300."
+    severity: medium
+    precedence_level: 40
+    supersedes: base_rule
+
+  - name: supersessor_d
+    type: supersedes_condition
+    verb: do_payment
+    parameter: amount
+    operator: gte
+    value: 400.0
+    decision_if_violated: ESCALATE
+    regulation: REG_BASIC
+    reason: "Override D — applies when amount >= 400."
+    severity: medium
+    precedence_level: 50
+    supersedes: base_rule

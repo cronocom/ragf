@@ -1,0 +1,122 @@
+# ============================================================================
+# Previous-version fixture for CC-07 · Drift Delta
+# ----------------------------------------------------------------------------
+# This file is identical to examples/fintech_minimal.yaml except that it
+# carries ONE EXTRA constraint: `legacy_high_amount_deny`. When loaded as
+# the `--previous` argument against the current minimal ontology, CC-07
+# MUST report `legacy_high_amount_deny` as removed.
+#
+# The dropped constraint has `decision_if_violated: DENY`, so the runner's
+# CC-07 severity escalation kicks in and the result is CRITICAL.
+# ============================================================================
+
+schema_version: "1.0"
+
+domain:
+  name: fintech_minimal
+  version: 0.9.0
+  description: "Previous version of the minimal fintech ontology."
+
+regulations:
+  - code: PSD2_ART97_SCA
+    name: "PSD2 Article 97 — Strong Customer Authentication"
+    description: "Requires SCA for electronic payments above defined thresholds."
+    celex: "32015L2366"
+
+  - code: AMLD_ART18_EDD
+    name: "5AMLD Article 18 — Enhanced Due Diligence for PEPs"
+    description: "Mandates EDD when the customer is a Politically Exposed Person."
+    celex: "32018L0843"
+
+verbs:
+  - name: transfer_funds
+    description: "Initiate a SEPA credit transfer on behalf of the customer."
+    risk_level: high
+    min_amm_level: 3
+    requires_human_approval: false
+    must_satisfy:
+      - PSD2_ART97_SCA
+      - AMLD_ART18_EDD
+    payload_schema:
+      - name: amount_eur
+        type: float
+        required: true
+      - name: customer_is_pep
+        type: boolean
+        required: true
+      - name: sca_verified
+        type: boolean
+        required: true
+
+  - name: verify_identity
+    description: "Run KYC / identity verification on a customer."
+    risk_level: medium
+    min_amm_level: 2
+    requires_human_approval: false
+    must_satisfy:
+      - AMLD_ART18_EDD
+    payload_schema:
+      - name: customer_is_pep
+        type: boolean
+        required: true
+      - name: document_type
+        type: string
+        required: true
+
+constraints:
+  - name: high_amount_requires_sca
+    type: conditional_threshold
+    verb: transfer_funds
+    parameter: amount_eur
+    operator: gte
+    value: 30.0
+    condition_field: sca_verified
+    condition_value: false
+    decision_if_violated: ESCALATE
+    regulation: PSD2_ART97_SCA
+    reason: "Transfers >= 30 EUR without SCA require human review."
+    severity: high
+    precedence_level: 90
+
+  - name: pep_requires_edd
+    type: conditional_threshold
+    verb: transfer_funds
+    parameter: amount_eur
+    operator: gte
+    value: 1000.0
+    condition_field: customer_is_pep
+    condition_value: true
+    decision_if_violated: ESCALATE
+    regulation: AMLD_ART18_EDD
+    reason: "Transfers >= 1000 EUR by PEPs require EDD."
+    severity: high
+    precedence_level: 95
+
+  - name: pep_identity_edd
+    type: conditional_threshold
+    verb: verify_identity
+    parameter: document_type
+    operator: in
+    value: ["passport", "national_id"]
+    condition_field: customer_is_pep
+    condition_value: true
+    decision_if_violated: ESCALATE
+    regulation: AMLD_ART18_EDD
+    reason: "PEP identity verification requires passport or national ID."
+    severity: medium
+    precedence_level: 80
+
+  # Present in v0.9.0 ONLY. fintech_minimal.yaml (v1.0.0) drops this
+  # constraint → CC-07 must report it as removed, with prev_decision=DENY
+  # which escalates the CC-07 severity to CRITICAL.
+  - name: legacy_high_amount_deny
+    type: threshold
+    verb: transfer_funds
+    parameter: amount_eur
+    operator: gte
+    value: 50000.0
+    decision_if_violated: DENY
+    regulation: PSD2_ART97_SCA
+    reason: "Legacy hard cap on transfers — to be reviewed."
+    severity: critical
+    precedence_level: 99

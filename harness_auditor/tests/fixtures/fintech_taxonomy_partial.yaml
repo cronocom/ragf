@@ -1,0 +1,12 @@
+# ============================================================================
+# Partial verb taxonomy for CC-10 · Hallucinated Verbs
+# ----------------------------------------------------------------------------
+# Lists ONLY `transfer_funds`. When this is supplied as --taxonomy against
+# fintech_minimal.yaml, `verify_identity` is treated as a hallucinated verb
+# and CC-10 fires with severity CRITICAL.
+# ============================================================================
+
+domain: fintech_minimal
+
+verbs:
+  - transfer_funds

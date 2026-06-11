@@ -1,0 +1,44 @@
+# ============================================================================
+# Tiny ontology · Unit test fixture
+# ----------------------------------------------------------------------------
+# Smallest valid ontology accepted by the loader. Used by unit tests for the
+# schema parser, the loader, and the Cypher emission layer. Should not be
+# used as a behavioural reference — see examples/fintech_minimal.yaml for
+# that.
+# ============================================================================
+
+schema_version: "1.0"
+
+domain:
+  name: tiny
+  version: 1.0.0
+  description: "Smallest valid ontology — single verb, single regulation."
+
+regulations:
+  - code: TEST_REG_001
+    name: "Test regulation"
+    description: "Synthetic regulation for unit tests."
+
+verbs:
+  - name: ping
+    description: "No-op test verb."
+    risk_level: low
+    min_amm_level: 1
+    requires_human_approval: false
+    must_satisfy:
+      - TEST_REG_001
+    payload_schema:
+      - name: payload_id
+        type: string
+        required: true
+
+constraints:
+  - name: payload_id_required
+    type: required_field
+    verb: ping
+    parameter: payload_id
+    decision_if_violated: DENY
+    regulation: TEST_REG_001
+    reason: "payload_id is mandatory for ping."
+    severity: low
+    precedence_level: 10

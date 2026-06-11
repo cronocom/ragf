@@ -1,0 +1,13 @@
+# ============================================================================
+# Complete verb taxonomy for CC-10 · Hallucinated Verbs
+# ----------------------------------------------------------------------------
+# Lists every verb that fintech_minimal.yaml declares, so CC-10 PASSes
+# when this file is supplied via --taxonomy. Used by tests to confirm that a
+# matching taxonomy produces no false positives.
+# ============================================================================
+
+domain: fintech_minimal
+
+verbs:
+  - transfer_funds
+  - verify_identity
