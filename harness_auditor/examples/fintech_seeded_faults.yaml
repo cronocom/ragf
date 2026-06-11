@@ -1,0 +1,226 @@
+# ============================================================================
+# Fintech ontology with seeded faults · Canonical regression fixture
+# ----------------------------------------------------------------------------
+# This file mirrors fintech_minimal.yaml in spirit, but carries a deliberate
+# defect per shipped certification criterion that can be expressed at the
+# YAML layer. The auditor MUST detect every one:
+#
+#   FAULT_01 → CC-01 (Verb Groundedness):
+#       Verb `approve_internal_transfer` declares no `must_satisfy`.
+#
+#   FAULT_02 → CC-02 (Constraint Reachability):
+#       Constraint `high_amount_requires_sca` references parameter
+#       `amount_eur`, but the verb `transfer_funds` declares its payload
+#       field as `amount`. The constraint is silently unreachable.
+#
+#   FAULT_03 → CC-04 (SUPERSEDES Cycles):
+#       Three constraints form an A → B → C → A cycle via `supersedes`.
+#
+#   FAULT_04 → CC-03 (Orphan Regulations) + CC-06 (Coverage Map):
+#       Regulation `BANK_INTERNAL_POLICY_01` is declared, listed in
+#       `transfer_funds.must_satisfy`, but no constraint REFERENCES it.
+#       Side effects: CC-03 reports the orphan; CC-06 drops
+#       `transfer_funds` to 2/3 = 0.667 coverage (< 0.85 threshold).
+#
+#   FAULT_05 → CC-05 (Precedence Collision):
+#       Constraint `duplicate_precedence_rule` is attached to
+#       `transfer_funds` with `precedence_level: 90`, same as
+#       `high_amount_requires_sca`. Tie-breaking becomes implementation-
+#       defined, violating determinism.
+#
+#   FAULT_06 → CC-08 (Authority Gradient):
+#       Verb `withdraw_emergency_cash` carries `risk_level: critical` with
+#       `min_amm_level: 2`. The canonical RAGF mapping requires ≥ 4 for
+#       critical actions.
+#
+# Not expressible in YAML (and therefore tested elsewhere):
+#   - CC-07 needs a previous-version ontology and the `--previous` flag.
+#   - CC-09 (decision_if_violated = ALLOW) is rejected by the Pydantic
+#     schema; CC-09 only catches post-load drift and is tested via an
+#     integration fixture that injects a Constraint via direct Cypher.
+#   - CC-10 needs a taxonomy via the `--taxonomy` flag.
+#
+# Expected certification_status: FAILED.
+# Expected failing CCs: {CC-01, CC-02, CC-03, CC-04, CC-05, CC-06, CC-08}.
+# ============================================================================
+
+schema_version: "1.0"
+
+domain:
+  name: fintech_broken
+  version: 1.0.0
+  description: "Fintech ontology with seeded faults — one per testable CC."
+
+regulations:
+  - code: PSD2_ART97_SCA
+    name: "PSD2 Article 97 — Strong Customer Authentication"
+    description: "Requires SCA for electronic payments above defined thresholds."
+    celex: "32015L2366"
+
+  - code: AMLD_ART18_EDD
+    name: "5AMLD Article 18 — Enhanced Due Diligence for PEPs"
+    description: "Mandates EDD when the customer is a Politically Exposed Person."
+    celex: "32018L0843"
+
+  # FAULT_04: declared, referenced by must_satisfy below, but no constraint
+  # REFERENCES it. Trips CC-03 (orphan) and contributes to CC-06 (coverage).
+  - code: BANK_INTERNAL_POLICY_01
+    name: "Bank internal policy 01"
+    description: "Internal anti-fraud policy with no enforcing constraint."
+
+verbs:
+  - name: transfer_funds
+    description: "Initiate a SEPA credit transfer."
+    risk_level: high
+    min_amm_level: 3
+    requires_human_approval: false
+    must_satisfy:
+      - PSD2_ART97_SCA
+      - AMLD_ART18_EDD
+      - BANK_INTERNAL_POLICY_01   # FAULT_04: no constraint references this
+    payload_schema:
+      # FAULT_02: field is `amount`, but the constraint below uses `amount_eur`.
+      - name: amount
+        type: float
+        required: true
+      - name: customer_is_pep
+        type: boolean
+        required: true
+      - name: sca_verified
+        type: boolean
+        required: true
+
+  # FAULT_01: `approve_internal_transfer` has no must_satisfy.
+  - name: approve_internal_transfer
+    description: "Approve an internal book-to-book transfer."
+    risk_level: high
+    min_amm_level: 3
+    requires_human_approval: false
+    must_satisfy: []
+    payload_schema:
+      - name: amount_eur
+        type: float
+        required: true
+      - name: customer_is_pep
+        type: boolean
+        required: true
+
+  # FAULT_06: critical-class action delegated to assisted-level agent.
+  # Trips CC-08 (required min_amm for critical is 4, declared is 2).
+  - name: withdraw_emergency_cash
+    description: "Emergency cash withdrawal under crisis protocol."
+    risk_level: critical
+    min_amm_level: 2
+    requires_human_approval: false
+    must_satisfy:
+      - AMLD_ART18_EDD
+    payload_schema:
+      - name: amount_eur
+        type: float
+        required: true
+
+constraints:
+  # FAULT_02: parameter mismatch — `amount_eur` is not a field of the verb.
+  - name: high_amount_requires_sca
+    type: conditional_threshold
+    verb: transfer_funds
+    parameter: amount_eur
+    operator: gte
+    value: 30.0
+    condition_field: sca_verified
+    condition_value: false
+    decision_if_violated: ESCALATE
+    regulation: PSD2_ART97_SCA
+    reason: "Transfers >= 30 EUR without SCA require human review."
+    severity: high
+    precedence_level: 90
+
+  # Constraint anchoring the PSD2 → AMLD coverage on transfer_funds. Without
+  # this CC-06 would fire on PSD2_ART97_SCA too; we want only the orphan
+  # BANK_INTERNAL_POLICY_01 to be uncovered.
+  - name: pep_requires_edd
+    type: conditional_threshold
+    verb: transfer_funds
+    parameter: customer_is_pep
+    operator: eq
+    value: true
+    condition_field: customer_is_pep
+    condition_value: true
+    decision_if_violated: ESCALATE
+    regulation: AMLD_ART18_EDD
+    reason: "PEP-flagged transfers require Enhanced Due Diligence."
+    severity: high
+    precedence_level: 95
+
+  # FAULT_05: precedence collision — same verb (`transfer_funds`) and the
+  # same `precedence_level: 90` as `high_amount_requires_sca`.
+  - name: duplicate_precedence_rule
+    type: conditional_threshold
+    verb: transfer_funds
+    parameter: customer_is_pep
+    operator: eq
+    value: false
+    condition_field: sca_verified
+    condition_value: true
+    decision_if_violated: ESCALATE
+    regulation: PSD2_ART97_SCA
+    reason: "Synthetic collision rule — same precedence as the SCA threshold."
+    severity: medium
+    precedence_level: 90
+
+  # Constraint anchoring AMLD coverage on `withdraw_emergency_cash`, so that
+  # FAULT_06 is isolated to CC-08 and does not also leak into CC-06.
+  - name: emergency_withdrawal_edd
+    type: conditional_threshold
+    verb: withdraw_emergency_cash
+    parameter: amount_eur
+    operator: gte
+    value: 100.0
+    condition_field: amount_eur
+    condition_value: 100.0
+    decision_if_violated: ESCALATE
+    regulation: AMLD_ART18_EDD
+    reason: "Emergency withdrawals over 100 EUR require EDD."
+    severity: high
+    precedence_level: 70
+
+  # ---- FAULT_03: three constraints forming an A → B → C → A cycle ----
+
+  - name: pep_overrides_threshold
+    type: supersedes_condition
+    verb: approve_internal_transfer
+    decision_if_violated: ESCALATE
+    regulation: AMLD_ART18_EDD
+    reason: "PEP override takes precedence over baseline threshold."
+    severity: high
+    precedence_level: 95
+    parameter: customer_is_pep
+    operator: eq
+    value: true
+    supersedes: threshold_baseline_rule        # A → B
+
+  - name: threshold_baseline_rule
+    type: supersedes_condition
+    verb: approve_internal_transfer
+    decision_if_violated: DENY
+    regulation: PSD2_ART97_SCA
+    reason: "Baseline threshold rule for internal transfers."
+    severity: medium
+    precedence_level: 50
+    parameter: amount_eur
+    operator: gte
+    value: 10000.0
+    supersedes: high_amount_emergency_rule     # B → C
+
+  - name: high_amount_emergency_rule
+    type: supersedes_condition
+    verb: approve_internal_transfer
+    decision_if_violated: DENY
+    regulation: PSD2_ART97_SCA
+    reason: "Emergency rule for very high internal transfers."
+    severity: critical
+    precedence_level: 99
+    parameter: amount_eur
+    operator: gte
+    value: 100000.0
+    supersedes: pep_overrides_threshold        # C → A  (closes the cycle)

@@ -1,0 +1,109 @@
+# ============================================================================
+# Fintech minimal ontology · Clean reference
+# ----------------------------------------------------------------------------
+# Designed to satisfy all ten certification criteria. The auditor MUST return
+# `certification_status: PASSED` when this file is the input.
+#
+# This file is intentionally small (2 verbs, 2 regulations, 3 constraints) so
+# the example stays readable. It is NOT a complete fintech ontology; for that
+# see the RAGF v2.4 paper appendix or the AgentSave production seed.
+# ============================================================================
+
+schema_version: "1.0"
+
+domain:
+  name: fintech_minimal
+  version: 1.0.0
+  description: "Minimal fintech ontology — reference clean example."
+
+regulations:
+  - code: PSD2_ART97_SCA
+    name: "PSD2 Article 97 — Strong Customer Authentication"
+    description: "Requires SCA for electronic payments above defined thresholds."
+    celex: "32015L2366"
+
+  - code: AMLD_ART18_EDD
+    name: "5AMLD Article 18 — Enhanced Due Diligence for PEPs"
+    description: "Mandates EDD when the customer is a Politically Exposed Person."
+    celex: "32018L0843"
+
+verbs:
+  - name: transfer_funds
+    description: "Initiate a SEPA credit transfer on behalf of the customer."
+    risk_level: high
+    min_amm_level: 3
+    requires_human_approval: false
+    must_satisfy:
+      - PSD2_ART97_SCA
+      - AMLD_ART18_EDD
+    payload_schema:
+      - name: amount_eur
+        type: float
+        required: true
+        description: "Transfer amount in euros."
+      - name: customer_is_pep
+        type: boolean
+        required: true
+        description: "Whether the originator is a Politically Exposed Person."
+      - name: sca_verified
+        type: boolean
+        required: true
+        description: "Whether SCA was completed for this transaction."
+
+  - name: verify_identity
+    description: "Run KYC / identity verification on a customer."
+    risk_level: medium
+    min_amm_level: 2
+    requires_human_approval: false
+    must_satisfy:
+      - AMLD_ART18_EDD
+    payload_schema:
+      - name: customer_is_pep
+        type: boolean
+        required: true
+      - name: document_type
+        type: string
+        required: true
+
+constraints:
+  - name: high_amount_requires_sca
+    type: conditional_threshold
+    verb: transfer_funds
+    parameter: amount_eur
+    operator: gte
+    value: 30.0
+    condition_field: sca_verified
+    condition_value: false
+    decision_if_violated: ESCALATE
+    regulation: PSD2_ART97_SCA
+    reason: "Transfers >= 30 EUR without SCA require human review (PSD2 Art. 97)."
+    severity: high
+    precedence_level: 90
+
+  - name: pep_requires_edd
+    type: conditional_threshold
+    verb: transfer_funds
+    parameter: amount_eur
+    operator: gte
+    value: 1000.0
+    condition_field: customer_is_pep
+    condition_value: true
+    decision_if_violated: ESCALATE
+    regulation: AMLD_ART18_EDD
+    reason: "Transfers >= 1000 EUR by PEPs require Enhanced Due Diligence."
+    severity: high
+    precedence_level: 95
+
+  - name: pep_identity_edd
+    type: conditional_threshold
+    verb: verify_identity
+    parameter: document_type
+    operator: in
+    value: ["passport", "national_id"]
+    condition_field: customer_is_pep
+    condition_value: true
+    decision_if_violated: ESCALATE
+    regulation: AMLD_ART18_EDD
+    reason: "PEP identity verification requires passport or national ID."
+    severity: medium
+    precedence_level: 80
