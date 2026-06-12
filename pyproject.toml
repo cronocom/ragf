@@ -1,0 +1,125 @@
+# ─────────────────────────────────────────────────────────────────────
+# RAGF Monorepo — Shared Tooling Configuration
+# ─────────────────────────────────────────────────────────────────────
+#
+# This file is INTENTIONALLY NOT a package metadata declaration.
+# The RAGF monorepo is not an installable Python distribution; each
+# component (harness_auditor, gateway, ragf_core, …) carries its own
+# packaging metadata or is consumed as a service.
+#
+# What this file IS:
+#   - The single source of truth for ruff and mypy configuration that
+#     ALL components in the monorepo inherit by reference.
+#   - The registry of pytest markers shared across components.
+#   - The declared minimum Python version for any component in the repo.
+#
+# What this file is NOT:
+#   - A package definition (no [project] section).
+#   - A build-system declaration (no [build-system] section).
+#   - A dependency manifest (use per-component pyproject.toml or, for
+#     the runtime gateway, requirements.txt).
+#
+# Components MAY override these defaults in their own pyproject.toml,
+# but the expectation is that overrides are documented and justified.
+# ─────────────────────────────────────────────────────────────────────
+
+# ──────────────── Ruff (linting + formatting) ────────────────────────
+[tool.ruff]
+# Python 3.11 is the floor; harness_auditor tests on 3.14 in CI.
+target-version = "py311"
+line-length = 100
+extend-exclude = [
+  ".venv",
+  "build",
+  "dist",
+  "*.egg-info",
+  "papers",                # LaTeX source, not Python.
+  "src_v2",                # Legacy code under deprecation review.
+  "harness_auditor",       # Has its own pyproject.toml override.
+]
+
+[tool.ruff.lint]
+select = [
+  "E",     # pycodestyle errors
+  "W",     # pycodestyle warnings
+  "F",     # pyflakes
+  "I",     # isort
+  "B",     # flake8-bugbear
+  "UP",    # pyupgrade
+  "RUF",   # ruff-specific
+]
+ignore = [
+  "E501",  # Line too long — handled by formatter, not linter.
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B011"]      # assert False is acceptable in tests.
+
+# ──────────────── Mypy (type checking) ───────────────────────────────
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+check_untyped_defs = true
+exclude = [
+  "^papers/",
+  "^src_v2/",
+  "^harness_auditor/",     # Has its own mypy config.
+  "^.venv/",
+  "^build/",
+]
+
+# Per-module overrides — third-party libraries without type stubs.
+[[tool.mypy.overrides]]
+module = ["neo4j.*", "anthropic.*", "structlog.*", "tenacity.*"]
+ignore_missing_imports = true
+
+# ──────────────── Pytest (testing) ───────────────────────────────────
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+addopts = [
+  "-ra",
+  "--strict-markers",
+  "--strict-config",
+]
+markers = [
+  # Markers shared across all components in the monorepo. Components
+  # MAY define their own additional markers in their own pyproject.toml.
+  "requires_neo4j: integration test needs a live Neo4j sandbox",
+  "requires_postgres: integration test needs a live PostgreSQL instance",
+  "requires_redis: integration test needs a live Redis instance",
+  "slow: test takes longer than 5 seconds; opt-out via -m 'not slow'",
+  "smoke: minimal end-to-end check; should pass in under 10 seconds",
+  "benchmark: performance measurement, not a correctness check",
+]
+filterwarnings = [
+  # Tighten this list as the codebase matures. Today we tolerate
+  # DeprecationWarning from third-party packages but flag our own.
+  "error::DeprecationWarning:gateway.*",
+  "error::DeprecationWarning:ragf_core.*",
+  "error::DeprecationWarning:shared.*",
+  "ignore::DeprecationWarning",
+]
+
+# ──────────────── Coverage (when enabled per-component) ──────────────
+[tool.coverage.run]
+branch = true
+source = ["gateway", "ragf_core", "shared"]
+omit = [
+  "*/tests/*",
+  "*/__init__.py",
+  "src_v2/*",
+  "harness_auditor/*",     # Has its own coverage scope.
+]
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "raise NotImplementedError",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
