@@ -271,7 +271,7 @@ async def validate_action(
             error=str(e),
             exc_info=True
         )
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.get("/v1/metrics/dashboard")
@@ -287,7 +287,7 @@ async def get_dashboard_metrics():
         return kpis
     except Exception as e:
         logger.error("metrics_error", error=str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.get("/v1/metrics/mttv")
@@ -306,7 +306,7 @@ async def get_mttv(hours: int = 24):
         return {"mttv_ms": mttv, "hours": hours}
     except Exception as e:
         logger.error("mttv_error", error=str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.get("/v1/metrics/pass-rate")
@@ -325,7 +325,7 @@ async def get_pass_rate(amm_level: int | None = None):
         return {"pass_rate_pct": pass_rate, "amm_level": amm_level}
     except Exception as e:
         logger.error("pass_rate_error", error=str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 if __name__ == "__main__":

@@ -364,19 +364,11 @@ async def test_fail_closed_coverage_matrix():
         ∀ failure ∈ FailureModes: evaluate() → DENY
     """
 
-    test_results = {
-        "neo4j_down": False,
-        "neo4j_timeout": False,
-        "neo4j_exception": False,
-        "signature_error": False,
-        "validator_exception": False,
-        "unexpected_error": False,
-        "health_timeout": False
-    }
-
-    # Run all tests
-    # (Individual tests already verify each mode)
-    # This is just a summary
+    # Note: This summary test serves as a visual coverage matrix; the
+    # actual verification of each failure mode is done by the individual
+    # test_* functions above. Refactoring this into an assertion-driven
+    # aggregator is tracked as future work (cf. monorepo backlog Fase B6,
+    # auditor's property-testing roadmap).
 
     print("\n" + "="*60)
     print("FAIL-CLOSED COVERAGE MATRIX")

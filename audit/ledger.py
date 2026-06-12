@@ -139,4 +139,4 @@ class AuditLedger:
                 trace_id=verdict.trace_id,
                 error=str(e)
             )
-            raise AuditWriteError(verdict.trace_id, str(e))
+            raise AuditWriteError(verdict.trace_id, str(e)) from e

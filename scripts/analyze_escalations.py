@@ -12,7 +12,13 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from ragf_core.escalation.resolution_tracker import ResolutionAnalyzer, ResolutionSimulator
+# Import from project modules after sys.path is configured; ruff flags this
+# as E402 because the import is not at the top of the file, but the order is
+# intentional: ragf_core is only resolvable once PROJECT_ROOT is on sys.path.
+from ragf_core.escalation.resolution_tracker import (  # noqa: E402
+    ResolutionAnalyzer,
+    ResolutionSimulator,
+)
 
 
 def load_escalation_logs(domain: str) -> list:

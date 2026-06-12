@@ -2,10 +2,15 @@
 RAGF Benchmark — Query Latency Comparison
 Neo4j vs PostgreSQL para validación semántica de ontología PSD2
 
-3 patrones de query que representan casos reales del Validation Gate:
-  Q1 — Existence check (1-hop): ¿existe este verbo?
-  Q2 — Full validation (3-hop): verbo → dominio → regulaciones → constraints
-  Q3 — AMM gate check: validación completa con filtro de nivel de madurez
+Patrón de query benchmarkeado:
+  Full validation (3-hop): verbo → dominio → regulaciones → constraints
+  Ejecutado sobre 5 casos de prueba que cubren el rango de complejidad
+  del Validation Gate (q1_simple → q5_hallucin).
+
+Nota histórica: una versión anterior de este benchmark planeaba también
+medir un "existence check" (1-hop) como Q1 independiente, pero ese
+patrón no se implementó. Si se reintroduce en el futuro, las queries
+de existencia se redefinen aquí junto con su loop de iteraciones.
 """
 import asyncio
 import json
@@ -33,7 +38,7 @@ TEST_CASES = {
 }
 
 
-# ── Neo4j Queries ─────────────────────────────────────────────────────────────
+# ── Neo4j Query ───────────────────────────────────────────────────────────────
 NEO4J_Q = """
 MATCH (v:BM_Verb {name: $verb_name})
 WHERE v.min_amm_level <= $amm_level
@@ -52,14 +57,8 @@ RETURN
   CASE WHEN size(regulations) > 0 THEN 1.0 ELSE 0.0 END AS coverage
 """
 
-NEO4J_EXIST_Q = """
-MATCH (v:BM_Verb {name: $verb_name})
-RETURN v.name AS verb, v.min_amm_level AS amm_level
-LIMIT 1
-"""
 
-
-# ── PostgreSQL Queries ────────────────────────────────────────────────────────
+# ── PostgreSQL Query ──────────────────────────────────────────────────────────
 PG_Q = """
 SELECT
     v.name                              AS verb,
@@ -77,13 +76,6 @@ LEFT JOIN bm_constraints c       ON vc.constraint_id = c.id
 WHERE v.name = $1::text
   AND v.min_amm_level <= $2::integer
 GROUP BY v.name, v.min_amm_level
-"""
-
-PG_EXIST_Q = """
-SELECT name, min_amm_level
-FROM bm_verbs
-WHERE name = $1
-LIMIT 1
 """
 
 
@@ -141,9 +133,8 @@ async def bench_postgres(iterations: int) -> dict:
     conn = await asyncpg.connect(PG_DSN)
     results = {}
 
-    # Preparar statements
-    stmt_full  = await conn.prepare(PG_Q)
-    stmt_exist = await conn.prepare(PG_EXIST_Q)
+    # Preparar statement
+    stmt_full = await conn.prepare(PG_Q)
 
     for name, tc in TEST_CASES.items():
         latencies = []
