@@ -31,10 +31,10 @@ class BenchmarkResults:
 
     def __init__(self, system_name: str):
         self.system_name = system_name
-        self.latencies: List[float] = []
-        self.decisions: List[str] = []
-        self.expected_decisions: List[str] = []
-        self.scenario_ids: List[str] = []
+        self.latencies: list[float] = []
+        self.decisions: list[str] = []
+        self.expected_decisions: list[str] = []
+        self.scenario_ids: list[str] = []
 
     def add_result(self, scenario_id: str, decision: str, expected: str, latency_ms: float):
         self.scenario_ids.append(scenario_id)
@@ -42,7 +42,7 @@ class BenchmarkResults:
         self.expected_decisions.append(expected)
         self.latencies.append(latency_ms)
 
-    def calculate_metrics(self) -> Dict:
+    def calculate_metrics(self) -> dict:
         """Calcula métricas finales"""
         # Latency percentiles
         sorted_latencies = sorted(self.latencies)

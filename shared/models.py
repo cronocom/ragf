@@ -47,7 +47,7 @@ class ActionPrimitive(BaseModel):
         min_length=1,
         max_length=100
     )
-    parameters: Dict[str, Any] = Field(
+    parameters: dict[str, Any] = Field(
         default_factory=dict,
         description="Parámetros específicos de la acción"
     )
@@ -97,7 +97,7 @@ class ValidatorResult(BaseModel):
     decision: Literal["PASS", "FAIL", "TIMEOUT"]
     reason: str
     latency_ms: float = Field(..., ge=0)
-    rule_violated: Optional[str] = None  # ej: "FAA-14-CFR-91.151"
+    rule_violated: str | None = None  # ej: "FAA-14-CFR-91.151"
 
 
 class Verdict(BaseModel):
@@ -124,7 +124,7 @@ class Verdict(BaseModel):
 
     # Contexto para auditoría
     action: ActionPrimitive
-    agent_id: Optional[str] = None
+    agent_id: str | None = None
 
     # v2.0: Cryptographic signature
     signature: str = Field(
@@ -222,11 +222,11 @@ class ActionRequest(BaseModel):
         default=AMMLevel.ACTIONABLE_AGENCY,
         description="Nivel de madurez del agente que hace la petición"
     )
-    agent_id: Optional[str] = Field(
+    agent_id: str | None = Field(
         default=None,
         description="Identificador del agente (para auditoría)"
     )
-    context: Dict[str, Any] = Field(
+    context: dict[str, Any] = Field(
         default_factory=dict,
         description="Contexto adicional (ej: estado del sistema)"
     )

@@ -7,8 +7,8 @@ Addresses Section 7.6.2 limitations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Optional
 from enum import Enum
+from typing import Any
 
 
 class StateConfidence(Enum):
@@ -66,9 +66,9 @@ class UncertaintyAwareHealthcareValidator:
 
     async def validate_with_uncertainty(
             self,
-            action: Dict,
-            state: Dict[str, StateValue]
-    ) -> Dict:
+            action: dict,
+            state: dict[str, StateValue]
+    ) -> dict:
         """
         Validate action, DENY if required state is too stale
         """

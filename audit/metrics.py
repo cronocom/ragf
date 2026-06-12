@@ -19,7 +19,7 @@ class AuditMetrics:
     def __init__(self, pool: asyncpg.Pool):
         self.pool = pool
 
-    async def get_dashboard_kpis(self) -> Dict[str, Any]:
+    async def get_dashboard_kpis(self) -> dict[str, Any]:
         """
         Obtiene KPIs principales para el dashboard.
 

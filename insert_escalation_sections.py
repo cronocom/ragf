@@ -5,11 +5,11 @@ Insert escalation analysis sections into RAGF_v2_3.tex
 
 
 # Read the main paper
-with open('papers/RAGF_v2_3.tex', 'r') as f:
+with open('papers/RAGF_v2_3.tex') as f:
     paper_content = f.read()
 
 # Read the sections to insert
-with open('papers/ESCALATION_ANALYSIS_SECTIONS.tex', 'r') as f:
+with open('papers/ESCALATION_ANALYSIS_SECTIONS.tex') as f:
     escalation_sections = f.read()
 
 # Extract only the subsections (not the bibliography entries or notes)

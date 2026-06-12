@@ -39,21 +39,21 @@ class EscalationResolution:
     """
 
     escalation_id: str
-    original_action: Dict
+    original_action: dict
     operator_id: str
     resolution_time_ms: int
     outcome: ResolutionOutcome
     decision_rationale: str
 
     # Jurisprudence tracking
-    new_rule_created: Optional[str] = None
-    similar_cases: List[str] = field(default_factory=list)
+    new_rule_created: str | None = None
+    similar_cases: list[str] = field(default_factory=list)
     consistency_score: float = 0.0
 
     # Metadata
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialize for storage"""
         return {
             "escalation_id": self.escalation_id,
@@ -79,10 +79,10 @@ class ResolutionAnalyzer:
     Implements metrics for AIES Section 7.4
     """
 
-    def __init__(self, resolutions: List[EscalationResolution]):
+    def __init__(self, resolutions: list[EscalationResolution]):
         self.resolutions = resolutions
 
-    def resolution_time_statistics(self) -> Dict:
+    def resolution_time_statistics(self) -> dict:
         """
         Compute resolution time distribution
 
@@ -106,7 +106,7 @@ class ResolutionAnalyzer:
             "total_resolutions": n
         }
 
-    def inter_operator_consistency(self) -> Dict:
+    def inter_operator_consistency(self) -> dict:
         """
         Measure agreement between operators on the same cases
 
@@ -166,7 +166,7 @@ class ResolutionAnalyzer:
             "total_comparisons": len(comparisons)
         }
 
-    def jurisprudence_growth_rate(self) -> Dict:
+    def jurisprudence_growth_rate(self) -> dict:
         """
         Analyze rate of new rule creation from escalations
 
@@ -228,10 +228,10 @@ class ResolutionSimulator:
 
     def simulate_from_logs(
             self,
-            escalation_logs: List[Dict],
+            escalation_logs: list[dict],
             num_operators: int = 3,
             random_seed: int = 42
-    ) -> List[EscalationResolution]:
+    ) -> list[EscalationResolution]:
         """
         Generate plausible resolution records from escalation logs
 
@@ -325,7 +325,7 @@ class ResolutionSimulator:
 
         return resolutions
 
-    def _determine_outcome(self, log: Dict) -> ResolutionOutcome:
+    def _determine_outcome(self, log: dict) -> ResolutionOutcome:
         """
         Determine base outcome from case characteristics
         This is DETERMINISTIC - same input = same output
@@ -372,7 +372,7 @@ class ResolutionSimulator:
             # Default conservative
             return ResolutionOutcome.DENIED_MAINTAINED
 
-    def _generate_rationale(self, log: Dict, outcome: ResolutionOutcome) -> str:
+    def _generate_rationale(self, log: dict, outcome: ResolutionOutcome) -> str:
         """Generate realistic decision rationale"""
 
         templates = {

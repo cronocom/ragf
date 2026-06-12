@@ -39,9 +39,9 @@ class ValidationResult:
     reason: str
     regulatory_ref: str
     remediation: str = ""
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "decision": self.decision.value,
@@ -69,7 +69,7 @@ class PSD2SCAValidator:
     def __init__(self, threshold_eur: float = DEFAULT_THRESHOLD_EUR):
         self.threshold_eur = threshold_eur
 
-    def validate(self, action: Dict[str, Any]) -> ValidationResult:
+    def validate(self, action: dict[str, Any]) -> ValidationResult:
         """Validate if Strong Customer Authentication is required."""
         amount = action.get("amount", 0.0)
         sca_completed = action.get("sca_completed", False)
@@ -114,7 +114,7 @@ class PSD2LimitValidator:
     def __init__(self, limit_eur: float = DEFAULT_LIMIT_EUR):
         self.limit_eur = limit_eur
 
-    def validate(self, action: Dict[str, Any]) -> ValidationResult:
+    def validate(self, action: dict[str, Any]) -> ValidationResult:
         """Validate transaction amount against configured limit."""
         amount = action.get("amount", 0.0)
 
@@ -141,10 +141,10 @@ class PSD2LimitValidator:
 class PSD2BeneficiaryValidator:
     """Beneficiary whitelist validator."""
 
-    def __init__(self, whitelist: Optional[List[str]] = None):
+    def __init__(self, whitelist: list[str] | None = None):
         self.whitelist = set(whitelist) if whitelist else set()
 
-    def validate(self, action: Dict[str, Any]) -> ValidationResult:
+    def validate(self, action: dict[str, Any]) -> ValidationResult:
         """Validate beneficiary against whitelist."""
         if action.get("beneficiary_whitelisted", False):
             return ValidationResult(

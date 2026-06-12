@@ -28,7 +28,7 @@ class Neo4jClient:
         self.uri = uri
         self.user = user
         self.password = password
-        self.driver: Optional[AsyncDriver] = None
+        self.driver: AsyncDriver | None = None
 
     async def connect(self):
         """Inicializar conexión"""
@@ -143,7 +143,7 @@ class Neo4jClient:
     async def get_required_validators(
         self,
         action: ActionPrimitive
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Obtiene la lista de validadores que deben ejecutarse para esta acción.
 
@@ -182,7 +182,7 @@ class Neo4jClient:
     async def get_action_regulations(
         self,
         action: ActionPrimitive
-    ) -> List[dict]:
+    ) -> list[dict]:
         """
         Obtiene las regulaciones que gobiernan esta acción.
         Útil para generar reportes de auditoría detallados.

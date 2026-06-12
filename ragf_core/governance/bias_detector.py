@@ -22,7 +22,7 @@ class BiasAlert:
     bias_type: BiasType
     severity: float  # 0-1
     affected_population: str
-    evidence: Dict
+    evidence: dict
     recommendation: str
 
 
@@ -33,14 +33,14 @@ class ProportionalityTester:
     Implements test described in Section 7.5 of paper
     """
 
-    def __init__(self, historical_data: List[Dict]):
+    def __init__(self, historical_data: list[dict]):
         """
         Args:
             historical_data: Past actions with outcomes (approved/denied/incident)
         """
         self.data = historical_data
 
-    def test_rule(self, proposed_rule: Dict) -> Optional[BiasAlert]:
+    def test_rule(self, proposed_rule: dict) -> BiasAlert | None:
         """
         Apply rule to historical data and check proportionality
 
@@ -95,7 +95,7 @@ class ProportionalityTester:
 
         return None
 
-    def _rule_matches(self, rule: Dict, action: Dict) -> bool:
+    def _rule_matches(self, rule: dict, action: dict) -> bool:
         """Check if rule would deny this action"""
 
         # Simple implementation - extend based on your rule structure

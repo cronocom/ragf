@@ -34,7 +34,7 @@ class AMLThresholdValidator:
         self.standard_threshold = standard_threshold
         self.high_risk_threshold = high_risk_threshold
 
-    def validate(self, action: Dict[str, Any]) -> ValidationResult:
+    def validate(self, action: dict[str, Any]) -> ValidationResult:
         """Validate transaction against AML thresholds."""
         amount = action.get("amount", 0.0)
         customer_risk = action.get("customer_risk_level", "standard")
@@ -84,7 +84,7 @@ class AMLRiskScoreValidator:
     def __init__(self, high_threshold: float = HIGH_THRESHOLD):
         self.high_threshold = high_threshold
 
-    def validate(self, action: Dict[str, Any]) -> ValidationResult:
+    def validate(self, action: dict[str, Any]) -> ValidationResult:
         """Validate transaction based on AML risk score."""
         risk_score = action.get("risk_score", 0.0)
         sanctions_match = action.get("sanctions_match", False)

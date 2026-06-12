@@ -14,7 +14,7 @@ class DemoScenario:
     id: str
     title: str
     description: str
-    action: Dict[str, Any]
+    action: dict[str, Any]
     expected_outcome: str
     teaching_point: str
 

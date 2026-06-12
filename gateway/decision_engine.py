@@ -215,7 +215,7 @@ class DecisionEngine:
                 self.neo4j.validate_semantic_authority(action, amm_level),
                 timeout=0.5  # 500ms timeout for semantic validation
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.error(
                 "semantic_validation_timeout",
                 trace_id=trace_id,
@@ -338,7 +338,7 @@ class DecisionEngine:
             )
 
             # Convertir excepciones en ValidatorResults
-            processed_results: List[ValidatorResult] = []
+            processed_results: list[ValidatorResult] = []
             for i, result in enumerate(validator_results):
                 if isinstance(result, Exception):
                     processed_results.append(ValidatorResult(
@@ -351,7 +351,7 @@ class DecisionEngine:
                 else:
                     processed_results.append(result)
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             # Timeout crítico → DENY automático
             latency = (time.perf_counter() - start_time) * 1000
 
@@ -459,7 +459,7 @@ class DecisionEngine:
     def _aggregate_decisions(
         self,
         semantic_verdict: SemanticVerdict,
-        validator_results: List[ValidatorResult]
+        validator_results: list[ValidatorResult]
     ) -> tuple[str, str]:
         """
         Lógica de agregación de veredictos.

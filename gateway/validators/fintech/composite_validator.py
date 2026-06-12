@@ -36,7 +36,7 @@ class FintechValidationEngine:
         self,
         max_latency_ms: float = DEFAULT_MAX_LATENCY_MS,
         enable_circuit_breaker: bool = True,
-        custom_config: Optional[Dict[str, Any]] = None
+        custom_config: dict[str, Any] | None = None
     ):
         self.max_latency_ms = max_latency_ms
         self.enable_circuit_breaker = enable_circuit_breaker
@@ -64,7 +64,7 @@ class FintechValidationEngine:
             ("psd2_beneficiary", self.psd2_beneficiary),
         ]
 
-    def validate(self, action: Dict[str, Any]) -> ValidationResult:
+    def validate(self, action: dict[str, Any]) -> ValidationResult:
         """
         Validate action through all configured validators.
 

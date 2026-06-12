@@ -49,7 +49,7 @@ class IntentNormalizer:
         self,
         prompt: str,
         domain: str = "aviation"
-    ) -> Tuple[ActionPrimitive, NormalizationMethod]:
+    ) -> tuple[ActionPrimitive, NormalizationMethod]:
         """
         Normaliza prompt a ActionPrimitive.
 
@@ -82,7 +82,7 @@ class IntentNormalizer:
             logger.info("intent_normalized", method="CLAUDE", verb=action.verb)
             return action, "CLAUDE"
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(
                 "claude_timeout",
                 timeout_ms=self.timeout_seconds * 1000,
