@@ -34,7 +34,7 @@ be split into independent repositories.
 
 ## Decision
 
-**The RAGF components live in a single monorepo at `github.com/cronocom/ragf`** (currently `cronocom/rafg`, rename pending), with the following conventions:
+**The RAGF components live in a single monorepo at `github.com/cronocom/ragf`** (renamed from `cronocom/rafg` on 2026-06-29), with the following conventions:
 
 1. **Component-prefixed tags**. Releases are tagged as
    `<component>-vX.Y.Z`:
