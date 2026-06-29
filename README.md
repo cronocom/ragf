@@ -2,7 +2,7 @@
 
 **Boundary Enforcement as Governance Infrastructure for Agentic AI in Regulated Systems**
 
-[![Paper](https://img.shields.io/badge/Paper-AIES%202026-blue)](papers/RAGF_v2_4.pdf)
+[![Paper](https://img.shields.io/badge/Paper-AIES%202026-blue)](papers/RAGF_v2_5.pdf)
 [![Status](https://img.shields.io/badge/Status-Under%20Review-orange)]()
 [![Tests](https://img.shields.io/badge/Tests-7%2F7%20Passing-success)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](LICENSE)
@@ -13,23 +13,27 @@ RAGF provides deterministic boundary enforcement for agentic AI systems in regul
 
 **Key Innovation**: Architectural separation of adaptive reasoning (uncertifiable) from execution authority (certifiable through established methods).
 
+> **Scope of evaluation.** All results below come from an **operational simulation** (aviation) and a **production-parallel shadow environment** (healthcare). **No action was executed against live aircraft or live patients.** Figures should be read as a simulation/shadow-mode feasibility study, not as production deployment results.
+
 ## 📄 Paper
 
-- **Latest Version**: [RAGF v2.4](papers/RAGF_v2_4.pdf) ✨ **NEW**
+- **Latest Version**: [RAGF v2.5](papers/RAGF_v2_5.pdf)
 - **Venue**: AIES 2026 (AAAI/ACM Conference on AI, Ethics, and Society)
 - **Paper ID**: #3
 - **Submission**: February 16, 2026
-- **Updated**: February 17, 2026 (v2.4 with escalation analysis)
 - **Status**: Under Review
 - **Conference**: October 12-14, 2026 (Malmö, Sweden)
 
-### 🆕 What's New in v2.4
+### 🆕 What's New in v2.5
 
-**Section 7.7: Human Escalation Analysis** (addressing reviewer concerns)
-- **Inter-operator consistency**: 95.3% agreement (aviation), 94.7% (healthcare)
-- **Resolution times**: Mean 187s (aviation), 301s (healthcare); all P95 < 10min
-- **Jurisprudence growth**: 40% rule creation (aviation), 34% (healthcare)
-- Comparable to expert judgment literature (Cohen's Kappa ≈0.85-0.90)
+Empirical reframing and reporting-integrity corrections (addressing reviewer concerns):
+
+- Reframed as a **simulation (aviation)** and **shadow-mode (healthcare)** feasibility study; removed "production" / "prevented" language. No action was executed against live aircraft or live patients.
+- Inter-operator consistency figures relabeled as **literature-based estimates from a simulation, not measured agreement**.
+- Clarified the zero-false-positive result and removed the degenerate Cohen's κ (empty false-positive category); addressed the bright-line-rules explanation directly.
+- Corrected the audit claim: HMAC-SHA256 provides **tamper-evidence under an honest-key assumption, not non-repudiation**.
+- Added an **ethics & data-governance** statement for the healthcare evaluation (fully anonymized data, no identifiable PHI, no IRB required; live deployment would require IRB).
+- Added recent **shielding / runtime-enforcement** related work.
 
 ### Key Results
 
@@ -39,23 +43,25 @@ RAGF provides deterministic boundary enforcement for agentic AI systems in regul
 | **ALLOW** | 11,203 (87.2%) | 1,612 (85.2%) | 12,815 |
 | **DENY** | 1,544 (12.0%) | 243 (12.8%) | 1,787 |
 | **ESCALATE** | 100 (0.8%) | 38 (2.0%) | 138 |
-| **Unsafe Prevented** | 37 | 4 | **41** |
-| **False Positives** | 0 | 0 | **0** |
+| **Unsafe actions flagged (sim/shadow)** | 37 | 4 | **41** |
+| **False Positives (within tested scope)** | 0 | 0 | **0** |
+
+> Aviation = operational simulation; Healthcare = production-parallel (shadow) environment. **No live aircraft or patients were involved.** "Unsafe actions flagged" denotes actions denied in simulation/shadow mode, not harms averted in operation. The zero false-positive result holds **only within the tested operational scope** (standard European routes; formulary medications with complete records) and is consistent with bright-line, low-ambiguity rules.
 
 **Performance**: Sub-30ms governance latency at p95 (28.1ms)  
 **Reliability**: Fail-closed across 7 failure categories (3,500 injections, 0 unintended ALLOW)
 
-### Escalation Pathway Analysis ✨ NEW
+### Escalation Pathway Analysis
 
-| Domain | Cases | Mean Resolution | Inter-Operator Agreement | New Rules Created |
-|--------|-------|-----------------|-------------------------|-------------------|
-| Aviation | 100 | 187s (3.1 min) | 95.3% | 40 (40%) |
-| Healthcare | 38 | 301s (5.0 min) | 94.7% | 13 (34%) |
+| Domain | Cases | Mean Resolution | Inter-Operator Agreement (estimate) | New Rules Created |
+|--------|-------|-----------------|-------------------------------------|-------------------|
+| Aviation | 100 | 187s (3.1 min) | ~95% *(literature-based estimate)* | 38 (38%) |
+| Healthcare | 38 | 301s (5.0 min) | ~94% *(literature-based estimate)* | 15 (39%) |
 
 **Key Insights**:
-- High consistency suggests ontology provides robust decision guidance
 - Resolution times maintain operational viability (P95 < 10 min)
 - Rule creation rate indicates maturing but not stagnant ontology
+- Inter-operator agreement figures are **modeled estimates, not observed rates**: systematic multi-operator review was not performed, and operator distributions are drawn from prior literature. They require empirical confirmation.
 
 ### Critical Contribution: Section 7.6 Operational Sustainability
 
@@ -66,9 +72,9 @@ RAGF provides deterministic boundary enforcement for agentic AI systems in regul
 
 **State Integration Complexity**:
 - Aviation: 3 state sources (crew scheduling, flight planning, maintenance) with 50ms timeout
-- Healthcare: HL7 FHIR integration with eventual consistency challenges
+- Healthcare: HL7 FHIR integration (against fully anonymized test data) with eventual consistency challenges
 
-**Single Point of Trust**: Explicit acknowledgment that Validation Gate is root of trust; compromise would subvert governance silently.
+**Single Point of Trust**: Explicit acknowledgment that the Validation Gate is the root of trust; compromise would subvert governance silently.
 
 ## 🏗️ Architecture
 ```
@@ -83,7 +89,7 @@ RAGF provides deterministic boundary enforcement for agentic AI systems in regul
 │  │  Semantic Authority      │  │  (Neo4j ontologies)
 │  │  Safety Validators       │  │  (Domain-specific rules)
 │  │  Cryptographic Audit     │  │  (HMAC-SHA256 + TimescaleDB)
-│  │  Escalation Tracker      │  │  (Resolution analysis) ✨ NEW
+│  │  Escalation Tracker      │  │  (Resolution analysis)
 │  └──────────────────────────┘  │
 └──────┬──────────────────┬───────┘
        │                  │
@@ -91,16 +97,15 @@ RAGF provides deterministic boundary enforcement for agentic AI systems in regul
        │                  │
        ▼                  ▼
   Execute          Human Review
-                   (95% consistency)
 ```
 
 ### Components
 
 - **Validation Gate**: Deterministic enforcement with fail-closed semantics
 - **Semantic Layer**: Neo4j ontologies grounding actions in domain knowledge
-- **Audit Trail**: Cryptographic signatures + append-only ledger (TimescaleDB)
-- **Escalation Tracker**: Resolution time & consistency analysis ✨ NEW
-- **Escalation Pathway**: Human-in-the-loop with 95% inter-operator agreement
+- **Audit Trail**: HMAC-SHA256 tamper-evident signatures + append-only ledger (TimescaleDB)
+- **Escalation Tracker**: Resolution time analysis
+- **Escalation Pathway**: Human-in-the-loop review for escalated cases
 
 ## 🚀 Quick Start
 
@@ -114,8 +119,8 @@ RAGF provides deterministic boundary enforcement for agentic AI systems in regul
 ### Installation
 ```bash
 # Clone repository
-git clone https://github.com/cronocom/rafg.git
-cd rafg
+git clone https://github.com/cronocom/ragf.git
+cd ragf
 
 # Start infrastructure
 docker-compose up -d
@@ -157,17 +162,19 @@ else:  # DENY
 
 ## 📊 Project Structure
 ```
-rafg/
+ragf/
 ├── papers/                    # Academic publications
-│   ├── RAGF_v2_4.pdf         # Latest paper (AIES 2026) ✨
-│   ├── RAGF_v2_3.tex         # LaTeX source
-│   └── Makefile              # LaTeX build system ✨ NEW
+│   ├── RAGF_v2_5.pdf         # Latest paper (AIES 2026)
+│   ├── RAGF_v2_5.tex         # LaTeX source
+│   ├── VERSIONING.md         # Versioning policy
+│   ├── archive/              # Superseded versions (v2.4, v2.3)
+│   └── Makefile              # LaTeX build system
 ├── gateway/                   # Core validation engine
 │   ├── decision_engine.py    # Validation orchestration
 │   ├── validators/           # Domain-specific validators
 │   └── ontologies/           # Neo4j schema + seed data
-├── ragf_core/                 # Extended analysis modules ✨ NEW
-│   ├── escalation/           # Resolution tracking & analysis
+├── ragf_core/                 # Extended analysis modules
+│   ├── escalation/           # Resolution tracking (simulation-based estimates)
 │   ├── governance/           # Bias detection & proportionality testing
 │   └── state/                # Uncertainty-aware state management
 ├── audit/                     # Cryptographic audit trail
@@ -180,9 +187,9 @@ rafg/
 ├── scripts/                   # Automation scripts
 │   ├── init_db.sh            # Database initialization
 │   ├── seed_ontology.sh      # Ontology seeding
-│   └── analyze_escalations.py # Escalation metrics ✨ NEW
-├── results/                   # Analysis outputs ✨ NEW
-│   └── escalation_analysis/  # Resolution metrics (JSON)
+│   └── analyze_escalations.py # Escalation metrics (simulation)
+├── results/                   # Analysis outputs
+│   └── escalation_analysis/  # Resolution metrics (JSON, simulated estimates)
 └── docs/                      # Technical documentation
     ├── ARCHITECTURE.md       # System design
     └── DEPLOYMENT_GUIDE.md   # Production deployment
@@ -202,7 +209,7 @@ pytest tests/integration/ -v
 # Run benchmarks
 pytest tests/benchmark/ -v
 
-# Generate escalation metrics ✨ NEW
+# Generate escalation metrics (simulation, fixed seed)
 python3 scripts/analyze_escalations.py
 ```
 
@@ -211,7 +218,7 @@ python3 scripts/analyze_escalations.py
 - Integration tests: End-to-end validation flow
 - Failure mode tests: 3,500 systematic injections across 7 categories
 - Benchmarks: Latency and throughput under load
-- Escalation analysis: Resolution consistency & jurisprudence growth ✨ NEW
+- Escalation analysis: Simulated resolution estimates (see scope note)
 
 ## 📈 Performance
 
@@ -223,13 +230,13 @@ python3 scripts/analyze_escalations.py
 | Ledger Write | 4.9ms | 8.2ms | 8.9ms |
 | **Total Governance** | **18.3ms** | **28.1ms** | **33.2ms** |
 
-Measured under sustained 50 req/s load over 90-day aviation deployment.
+Measured under sustained 50 req/s load over a 90-day aviation operational simulation.
 
 ## 🔒 Security
 
-- **Threat Model**: Documented in [Section 5](papers/RAGF_v2_4.pdf#page=4)
+- **Threat Model**: Documented in Section 5 of [the paper](papers/RAGF_v2_5.pdf)
 - **Fail-Closed**: All failures default to DENY (3,500 injections, 0 unintended ALLOW)
-- **Audit Trail**: HMAC-SHA256 signed verdicts + append-only ledger
+- **Audit Trail**: HMAC-SHA256 signed verdicts + append-only ledger — provides **tamper-evidence under an honest-key assumption, not non-repudiation**. HMAC is a symmetric MAC: any holder of the shared key can forge entries (the key-compromise case in the threat model). Non-repudiation would require an asymmetric signature scheme.
 - **Security Audit**: See [docs/audit/SECURITY_AUDIT_v2.0.md](docs/audit/SECURITY_AUDIT_v2.0.md)
 
 ## 📚 Documentation
@@ -238,7 +245,7 @@ Measured under sustained 50 req/s load over 90-day aviation deployment.
 - [API Reference](docs/API.md)
 - [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
 - [Migration to v2](docs/migration/V2_MIGRATION_COMPLETE.md)
-- [Escalation Analysis Summary](ESCALATION_ANALYSIS_SUMMARY.md) ✨ NEW
+- [Escalation Analysis Summary](ESCALATION_ANALYSIS_SUMMARY.md)
 
 ## 🔨 Build System
 
@@ -255,14 +262,11 @@ make draft
 # Compile and open
 make view
 
-# Specific version
-make VERSION=camera_ready
-
 # Clean build artifacts
 make clean
 ```
 
-See [papers/Makefile](papers/Makefile) for all options.
+See [papers/Makefile](papers/Makefile) for all options. Regenerate the PDF after every `.tex` edit and commit both together (see [papers/VERSIONING.md](papers/VERSIONING.md)).
 
 ## 🤝 Contributing
 
@@ -282,8 +286,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
   author={Rodríguez-Montaña, Yamil},
   booktitle={AAAI/ACM Conference on AI, Ethics, and Society (AIES)},
   year={2026},
-  address={Malmö, Sweden},
-  note={Paper \#3, includes comprehensive escalation pathway analysis}
+  address={Malmö, Sweden}
 }
 ```
 
@@ -303,22 +306,28 @@ Apache License 2.0 - See [LICENSE](LICENSE) for details.
 
 ## 📄 Publication Status
 
-**Academic Paper**: RAGF v2.4 submitted to AIES 2026
+**Academic Paper**: RAGF submitted to AIES 2026 (revised to v2.5)
 - **Conference**: AAAI/ACM Conference on AI, Ethics, and Society
 - **Paper ID**: #3
 - **Initial Submission**: February 16, 2026
-- **Updated Version**: February 17, 2026 (v2.4)
 - **Status**: ✅ Under Review
-- **Expected Notification**: April-May 2026
 - **Conference Dates**: October 12-14, 2026 (Malmö, Sweden)
 
-**Latest Paper**: [RAGF_v2_4.pdf](papers/RAGF_v2_4.pdf) (511 KB, 10 pages)
+**Latest Paper**: [RAGF_v2_5.pdf](papers/RAGF_v2_5.pdf)
 
 ### Version History
-- **v2.4** (Feb 17, 2026): Added Section 7.7 (Human Escalation Analysis) with inter-operator consistency metrics, resolution times, and jurisprudence growth patterns
-- **v2.3** (Feb 16, 2026): Initial AIES submission with operational sustainability analysis
-- **v2.0** (Dec 2025): Complete rewrite with production deployment results
+- **v2.5** (current): Empirical reframing and reporting-integrity corrections.
+  - Reframed the work as a **simulation (aviation)** and **shadow-mode (healthcare)** feasibility study; removed "production" / "prevented" language. No action was executed against live aircraft or live patients.
+  - Relabeled inter-operator consistency figures as **literature-based estimates from a simulation**, not measured agreement; aligned paper, README, and `ResolutionSimulator` documentation.
+  - Clarified the zero-false-positive / Cohen's κ result (empty false-positive category) and addressed the bright-line-rules explanation.
+  - Corrected the audit claim: HMAC-SHA256 provides **tamper-evidence under an honest-key assumption, not non-repudiation**.
+  - Added an **ethics & data-governance** statement for the healthcare evaluation (fully anonymized data, no identifiable PHI, no IRB required; live deployment would require IRB).
+  - Added recent **shielding / runtime-enforcement** related work.
+  - Fixed repository typo `rafg` → `ragf` and naming inconsistencies.
+- **v2.4** (Feb 17, 2026): Added Section 7.7 (Human Escalation Analysis). *Archived in `papers/archive/`.*
+- **v2.3** (Feb 16, 2026): Initial AIES submission with operational sustainability analysis.
+- **v2.0** (Dec 2025): Rewrite with simulation/shadow-mode feasibility results.
 
 ---
 
-**Status**: RAGF v2.4 demonstrates that deterministic boundary enforcement is operationally viable with 95% inter-operator consistency in human escalation pathways, while explicitly documenting governance trade-offs that technical architecture alone cannot resolve.
+**Status**: RAGF v2.5 demonstrates that deterministic boundary enforcement is operationally feasible in simulation/shadow-mode evaluation, while explicitly documenting governance trade-offs that technical architecture alone cannot resolve.

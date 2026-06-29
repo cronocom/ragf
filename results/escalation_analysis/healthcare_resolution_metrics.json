@@ -1,4 +1,11 @@
 {
+  "_metadata": {
+    "data_type": "simulated_literature_based_estimate",
+    "warning": "Inter-operator agreement and rule-creation figures are produced by a deterministic simulator (ResolutionSimulator) using literature-based operator distributions. These are MODELED ESTIMATES, not measured human decisions. Do not cite as empirical evidence.",
+    "generator": "scripts/analyze_escalations.py",
+    "seed": 42,
+    "review_performed": "none (no systematic multi-operator review)"
+  },
   "domain": "healthcare",
   "time_statistics": {
     "mean_ms": 300725.2543859649,
@@ -42,6 +49,6 @@
     "rule_creation_rate": 0.34210526315789475,
     "interpretation": "Low rate indicates stable ontology; high rate may signal incomplete initial ruleset"
   },
-  "generated_at": "2024-02-17T00:00:00Z",
-  "methodology_note": "Metrics derived from escalation logs with post-deployment instrumentation. Operator assignments use distributions from aviation/healthcare decision-making literature."
+  "generated_at": "2026-02-17T00:00:00Z",
+  "methodology_note": "Escalation counts derive from system logs (observed). Operator assignments and all agreement / rule-creation figures are produced by ResolutionSimulator using distributions from aviation/healthcare decision-making literature; they are simulated estimates, not measured. See _metadata."
 }
