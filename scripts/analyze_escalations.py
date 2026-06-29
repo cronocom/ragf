@@ -1,7 +1,11 @@
 # scripts/analyze_escalations.py
 
 """
-Generate escalation metrics for AIES camera-ready
+Generate (simulated) escalation metrics for the AIES paper.
+
+NOTE: The figures produced here are literature-based SIMULATION estimates
+(via ResolutionSimulator), not measured operator decisions. Every output JSON
+carries a ``_metadata`` block recording this. See ESCALATION_ANALYSIS_SUMMARY.md.
 """
 
 import json
@@ -18,6 +22,28 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from ragf_core.escalation.resolution_tracker import (  # noqa: E402
     ResolutionAnalyzer,
     ResolutionSimulator,
+)
+
+# Integrity labeling baked into every generated JSON so the simulated nature
+# survives any regeneration (do not present these figures as measured).
+SIMULATION_METADATA = {
+    "data_type": "simulated_literature_based_estimate",
+    "warning": (
+        "Inter-operator agreement and rule-creation figures are produced by a "
+        "deterministic simulator (ResolutionSimulator) using literature-based "
+        "operator distributions. These are MODELED ESTIMATES, not measured "
+        "human decisions. Do not cite as empirical evidence."
+    ),
+    "generator": "scripts/analyze_escalations.py",
+    "seed": 42,
+    "review_performed": "none (no systematic multi-operator review)",
+}
+
+METHODOLOGY_NOTE = (
+    "Escalation counts derive from system logs (observed). Operator assignments "
+    "and all agreement / rule-creation figures are produced by ResolutionSimulator "
+    "using distributions from aviation/healthcare decision-making literature; they "
+    "are simulated estimates, not measured. See _metadata."
 )
 
 
@@ -89,7 +115,7 @@ def load_escalation_logs(domain: str) -> list:
 
 def main():
     print("\n" + "=" * 70)
-    print("RAGF ESCALATION ANALYSIS FOR AIES CAMERA-READY")
+    print("RAGF ESCALATION ANALYSIS (SIMULATED ESTIMATES)")
     print("=" * 70)
 
     for domain in ["aviation", "healthcare"]:
@@ -165,22 +191,23 @@ def main():
         output_file = output_dir / f"{domain}_resolution_metrics.json"
         with open(output_file, 'w') as f:
             json.dump({
+                "_metadata": SIMULATION_METADATA,
                 "domain": domain,
                 "time_statistics": time_stats,
                 "consistency": consistency,
                 "jurisprudence_growth": growth,
-                "generated_at": "2024-02-17T00:00:00Z",
-                "methodology_note": "Metrics derived from escalation logs with post-deployment instrumentation. Operator assignments use distributions from aviation/healthcare decision-making literature."
+                "generated_at": "2026-02-17T00:00:00Z",
+                "methodology_note": METHODOLOGY_NOTE
             }, f, indent=2)
 
         print(f"\n✅ Results saved to: {output_file.relative_to(PROJECT_ROOT)}")
 
     print("\n" + "=" * 70)
-    print("✨ ANALYSIS COMPLETE - Ready for camera-ready submission")
+    print("✨ ANALYSIS COMPLETE")
     print("=" * 70)
     print("\nNext steps:")
     print("  1. Review generated metrics in results/escalation_analysis/")
-    print("  2. Update LaTeX tables in papers/RAGF_v2_3.tex")
+    print("  2. Update LaTeX tables in papers/RAGF_v2_5.tex if figures changed")
     print("  3. Commit changes: git add results/ papers/ ragf_core/")
     print()
 

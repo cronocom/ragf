@@ -1,9 +1,32 @@
 # ragf_core/escalation/resolution_tracker.py
 
 """
-Escalation Resolution Tracking System
+Escalation Resolution Tracking & Simulation
 Author: Yamil Rodriguez (Reflexio Studio)
-Purpose: Track human escalation decisions for consistency analysis
+
+⚠️ IMPORTANT — SIMULATED DATA, NOT MEASURED HUMAN DECISIONS
+-----------------------------------------------------------
+This module defines two distinct things:
+
+  1. EscalationResolution / ResolutionAnalyzer
+     Data structures and metrics that WOULD operate on real operator
+     decisions if such data were collected.
+
+  2. ResolutionSimulator (and the helpers `_determine_outcome`,
+     `_generate_rationale`)
+     A DETERMINISTIC SIMULATOR that fabricates plausible operator
+     decisions from escalation logs using:
+       - SHA-256-based outcome mapping (sha256(escalation_id) % 100), and
+       - experience-stratified deviation drawn from published
+         human-factors / clinical decision-making literature.
+
+The inter-operator agreement figures reported in the paper and in
+ESCALATION_ANALYSIS_SUMMARY.md (≈95% aviation / ≈94% healthcare) are produced
+by this SIMULATOR. They are MODELED ESTIMATES, NOT observed agreement between
+human operators. No systematic multi-operator review was performed.
+
+Do NOT cite the simulator output as empirical evidence of operator consistency.
+Empirical multi-operator measurement is required future work.
 """
 
 import hashlib
@@ -75,7 +98,7 @@ class EscalationResolution:
 class ResolutionAnalyzer:
     """
     Analyzes escalation resolutions for consistency metrics
-    Implements metrics for AIES Section 7.4
+    Implements metrics for AIES Section 7.7
     """
 
     def __init__(self, resolutions: list[EscalationResolution]):
@@ -107,10 +130,14 @@ class ResolutionAnalyzer:
 
     def inter_operator_consistency(self) -> dict:
         """
-        Measure agreement between operators on the same cases
+        Compute the agreement rate between operators over the resolutions
+        provided.
 
-        Each operator independently reviews the same set of escalations.
-        We measure agreement rate across all shared cases.
+        NOTE: This method computes agreement over whatever resolutions it is
+        given. When the inputs are produced by ResolutionSimulator, the result
+        is a MODELED ESTIMATE, not a measurement of real operator agreement,
+        because no systematic multi-operator review was performed (see the
+        module docstring and ESCALATION_ANALYSIS_SUMMARY.md).
 
         Returns:
             dict with operator pairs and their agreement rates
@@ -190,18 +217,13 @@ class ResolutionAnalyzer:
 # SIMULADOR PARA GENERAR DATOS RETROACTIVOS (honesto)
 class ResolutionSimulator:
     """
-    Simulate resolution data for existing escalation logs
+    ⚠️ SYNTHETIC DATA GENERATOR — NOT REAL OPERATOR DECISIONS.
 
-    IMPORTANT: This is a RECONSTRUCTION of what likely happened,
-    not fabricated data. Based on:
-    1. Actual escalation records from validation logs
-    2. Realistic time distributions from aviation/healthcare literature
-    3. Operator consistency patterns from domain studies
-
-    CRITICAL UPDATE v2.3.1: Multi-operator independent review
-    - Each operator reviews ALL cases independently
-    - 10-12% disagreement on boundary cases (literature-based)
-    - ~88-90% overall inter-operator agreement
+    Reconstructs plausible escalation resolutions from logs using a
+    deterministic hash mapping plus literature-based operator-deviation
+    distributions. Output is a simulation for a priori plausibility analysis,
+    not a record of human judgments. Any metric computed over this output is an
+    estimate, not a measurement.
     """
 
     def __init__(self, domain: str = "aviation"):
@@ -324,10 +346,26 @@ class ResolutionSimulator:
 
         return resolutions
 
+    @staticmethod
+    def _stable_hash_pct(key: str) -> int:
+        """
+        Deterministic, process-independent replacement for ``hash(key) % 100``.
+
+        Python's built-in ``hash()`` for ``str`` is salted per process
+        (``PYTHONHASHSEED``), so it is NOT reproducible across runs or
+        machines. SHA-256 yields a stable value in ``[0, 100)`` for the same
+        input on any platform, which is what the fixed-seed reproducibility
+        claim in the metadata requires.
+        """
+        digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
+        return int(digest, 16) % 100
+
     def _determine_outcome(self, log: dict) -> ResolutionOutcome:
         """
-        Determine base outcome from case characteristics
-        This is DETERMINISTIC - same input = same output
+        Determine base outcome from case characteristics.
+        Deterministic and process-independent: the same input always maps to
+        the same output via :meth:`_stable_hash_pct` (SHA-256), independent of
+        ``PYTHONHASHSEED``.
         """
 
 
@@ -337,7 +375,7 @@ class ResolutionSimulator:
         if "edge case" in reason:
             # Edge cases -> likely new rule (60% of edge cases)
             # Use hash of escalation_id for determinism
-            hash_val = hash(log.get("escalation_id", "")) % 100
+            hash_val = self._stable_hash_pct(log.get("escalation_id", ""))
             if hash_val < 60:
                 return ResolutionOutcome.APPROVED_NEW_RULE
             else:
@@ -345,7 +383,7 @@ class ResolutionSimulator:
 
         elif "novel scenario" in reason:
             # Novel scenarios -> new rule (70% of novel cases)
-            hash_val = hash(log.get("escalation_id", "")) % 100
+            hash_val = self._stable_hash_pct(log.get("escalation_id", ""))
             if hash_val < 70:
                 return ResolutionOutcome.APPROVED_NEW_RULE
             else:
@@ -353,7 +391,7 @@ class ResolutionSimulator:
 
         elif "near boundary" in reason or "marginal" in reason:
             # Boundary cases -> split (50/50 approve/deny)
-            hash_val = hash(log.get("escalation_id", "")) % 100
+            hash_val = self._stable_hash_pct(log.get("escalation_id", ""))
             if hash_val < 50:
                 return ResolutionOutcome.APPROVED_EXCEPTION
             else:
@@ -361,7 +399,7 @@ class ResolutionSimulator:
 
         elif "clear violation" in reason:
             # Clear violations -> deny (90%)
-            hash_val = hash(log.get("escalation_id", "")) % 100
+            hash_val = self._stable_hash_pct(log.get("escalation_id", ""))
             if hash_val < 90:
                 return ResolutionOutcome.DENIED_MAINTAINED
             else:

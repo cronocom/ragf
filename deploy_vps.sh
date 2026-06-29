@@ -15,8 +15,8 @@ apt install docker-compose -y
 
 # Clone repo
 cd /opt
-git clone https://github.com/cronocom/rafg.git || (cd rafg && git pull)
-cd rafg
+git clone https://github.com/cronocom/ragf.git || (cd ragf && git pull)
+cd ragf
 
 # Setup environment
 cp .env.example .env

@@ -380,8 +380,8 @@ Every decision includes:
 
 ```bash
 # Clone repository
-git clone https://github.com/cronocom/rafg.git
-cd rafg
+git clone https://github.com/cronocom/ragf.git
+cd ragf
 
 # Build images
 make build
