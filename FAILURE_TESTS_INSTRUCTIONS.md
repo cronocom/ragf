@@ -31,7 +31,7 @@
 ## 🚀 OPCIÓN 1: Ejecutar con Script (RECOMENDADO)
 
 ```bash
-cd /Users/ianmont/Dev/rafg
+cd /Users/ianmont/Dev/ragf
 chmod +x run_failure_tests.sh
 ./run_failure_tests.sh
 ```
@@ -89,7 +89,7 @@ PRODUCTION STATUS: ✅ READY
 ## 🚀 OPCIÓN 2: Ejecutar con pytest directamente
 
 ```bash
-cd /Users/ianmont/Dev/rafg
+cd /Users/ianmont/Dev/ragf
 
 # Set secret (required)
 export RAGF_SIGNATURE_SECRET=$(openssl rand -hex 32)
@@ -103,7 +103,7 @@ pytest tests/integration/test_failure_modes.py -v -s
 ## 🚀 OPCIÓN 3: Ejecutar test individual
 
 ```bash
-cd /Users/ianmont/Dev/rafg
+cd /Users/ianmont/Dev/ragf
 export RAGF_SIGNATURE_SECRET=$(openssl rand -hex 32)
 
 # Test solo Neo4j timeout
@@ -128,7 +128,7 @@ export RAGF_SIGNATURE_SECRET=$(openssl rand -hex 32)
 
 ```bash
 # Solución: Ejecutar desde el directorio raíz
-cd /Users/ianmont/Dev/rafg
+cd /Users/ianmont/Dev/ragf
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 pytest tests/integration/test_failure_modes.py -v
 ```
@@ -239,7 +239,7 @@ All 7 failure mode tests PASSED:
 
 Ejecuta:
 ```bash
-cd /Users/ianmont/Dev/rafg
+cd /Users/ianmont/Dev/ragf
 chmod +x run_failure_tests.sh
 ./run_failure_tests.sh
 ```

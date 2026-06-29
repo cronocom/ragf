@@ -43,7 +43,7 @@ serves traffic; the auditor certifies the harness before traffic starts.
 
 **Reading the numbers**: Postgres is faster in absolute terms on these
 three query classes. Both backends operate well within the 30 ms p95 RAGF
-gate budget documented in [`papers/RAGF_v2_4.pdf`](../papers/RAGF_v2_4.pdf).
+gate budget documented in [`papers/RAGF_v2_5.pdf`](../papers/RAGF_v2_5.pdf).
 
 See [`results/benchmark_results.json`](results/benchmark_results.json) for
 the raw per-iteration timings and
@@ -97,7 +97,7 @@ v0.2.0), so the trade-off lands in Neo4j's favour.
 ### Steps
 
 ```bash
-cd /Users/ianmont/Dev/rafg     # repo root
+cd /Users/ianmont/Dev/ragf     # repo root
 
 # Bring up both backends (this assumes docker-compose.yml has services
 # for both neo4j and a postgres instance; if Postgres is not declared
@@ -145,7 +145,7 @@ and `ontology/postgres_loader.py` for the canonical implementations.
 
 This benchmark feeds into two artefacts of the monorepo:
 
-- **The paper** ([`papers/RAGF_v2_4.pdf`](../papers/RAGF_v2_4.pdf))
+- **The paper** ([`papers/RAGF_v2_5.pdf`](../papers/RAGF_v2_5.pdf))
   cites these numbers when justifying the choice of Neo4j for the RAGF
   Semantic Authority Layer.
 - **The harness_auditor** ([`harness_auditor/`](../harness_auditor/))

@@ -21,7 +21,7 @@ Run these commands to verify the migration succeeded:
 
 ### Step 1: Run Smoke Tests
 ```bash
-cd /Users/ianmont/Dev/rafg
+cd /Users/ianmont/Dev/ragf
 make smoke
 ```
 

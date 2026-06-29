@@ -42,7 +42,7 @@ http://localhost
 ### Step 1: Create password file
 
 ```bash
-cd ~/Dev/rafg/infra/docker
+cd ~/Dev/ragf/infra/docker
 
 # Install htpasswd if needed (macOS)
 brew install httpd
@@ -99,7 +99,7 @@ Now accessing `http://localhost` will require:
 ```bash
 # On VPS
 git clone <your-repo>
-cd rafg/infra/docker
+cd ragf/infra/docker
 
 # Start services
 docker-compose -f docker-compose.demo.yml up -d

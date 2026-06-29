@@ -308,7 +308,7 @@ Instead of trying to audit a neural network "black box," we audit the **determin
 
 ## Contact & Resources
 
-**GitHub**: https://github.com/cronocom/rafg  
+**GitHub**: https://github.com/cronocom/ragf  
 **Documentation**: [`docs/`](./docs/)  
 **Paper** (pending): Submission to ACM SIGSOFT (2026)
 

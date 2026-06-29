@@ -7,14 +7,12 @@
 # ============================================================================
 
 # Main paper filename (without .tex extension)
-PAPER = RAGF_v2_3
+PAPER = RAGF_v2_5
 
 # Output version (change this when you want a new version)
-# Examples: v2_4, v2_5, v3_0, final, camera_ready, submission
-VERSION = v2_4
 
 # Output filename (constructed automatically)
-OUTPUT = $(PAPER)_$(VERSION).pdf
+OUTPUT = $(PAPER).pdf
 
 # LaTeX compiler options
 LATEX = pdflatex
@@ -115,7 +113,6 @@ help:
 	@echo ""
 	@echo "Configuration:"
 	@echo "  PAPER   = $(PAPER)"
-	@echo "  VERSION = $(VERSION)"
 	@echo "  OUTPUT  = $(OUTPUT)"
 	@echo ""
 	@echo "Available targets:"
@@ -128,27 +125,6 @@ help:
 	@echo "  make watch    - Auto-recompile on file changes (requires fswatch)"
 	@echo "  make help     - Show this help message"
 	@echo ""
-	@echo "Version Management:"
-	@echo "  To create a new version, edit the VERSION variable:"
-	@echo "    make VERSION=v2_5"
-	@echo "    make VERSION=final"
-	@echo "    make VERSION=camera_ready"
-	@echo ""
 	@echo "Examples:"
-	@echo "  make                    → Creates $(OUTPUT)"
-	@echo "  make VERSION=v2_5       → Creates RAGF_v2_3_v2_5.pdf"
-	@echo "  make VERSION=submission → Creates RAGF_v2_3_submission.pdf"
+	@echo "  make          → Creates $(OUTPUT) (RAGF_v2_5.pdf)"
 	@echo ""
-
-# ============================================================================
-# ADVANCED: Multiple versions at once
-# ============================================================================
-
-.PHONY: versions
-
-versions:
-	@echo "📦 Creating multiple versions..."
-	@$(MAKE) VERSION=draft
-	@$(MAKE) VERSION=review
-	@$(MAKE) VERSION=final
-	@echo "✅ Created: $(PAPER)_draft.pdf, $(PAPER)_review.pdf, $(PAPER)_final.pdf"

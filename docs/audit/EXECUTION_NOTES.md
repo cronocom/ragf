@@ -4,7 +4,7 @@
 
 1. **Levantar el stack**:
 ```bash
-cd /Users/ianmont/Dev/rafg
+cd /Users/ianmont/Dev/ragf
 make up
 make smoke  # Verificar que todo esté verde
 ```

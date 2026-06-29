@@ -4,14 +4,14 @@
 
 **TODO EL CÓDIGO HA SIDO CREADO EXITOSAMENTE**
 
-Tienes un MVA completo funcional en `/Users/ianmont/Dev/rafg`
+Tienes un MVA completo funcional en `/Users/ianmont/Dev/ragf`
 
 ---
 
 ## 📂 Estructura Creada
 
 ```
-rafg/
+ragf/
 ├── 📄 Configuración (9 archivos)
 │   ├── .env.example
 │   ├── .gitignore
@@ -59,7 +59,7 @@ rafg/
 ### 1️⃣ VERIFICAR ESTRUCTURA (2 minutos)
 
 ```bash
-cd /Users/ianmont/Dev/rafg
+cd /Users/ianmont/Dev/ragf
 tree -L 2
 ```
 
@@ -99,7 +99,7 @@ git commit -m "feat: RAGF MVA v1.0 - Complete framework implementation
 - Docker compose stack"
 
 # Conectar con tu repo de GitHub
-git remote add origin https://github.com/cronocom/rafg.git
+git remote add origin https://github.com/cronocom/ragf.git
 git branch -M main
 git push -u origin main
 ```
@@ -116,8 +116,8 @@ ssh root@65.19.178.76
 
 # Clonar repo
 cd /opt
-git clone https://github.com/cronocom/rafg.git
-cd rafg
+git clone https://github.com/cronocom/ragf.git
+cd ragf
 
 # Configurar .env
 nano .env

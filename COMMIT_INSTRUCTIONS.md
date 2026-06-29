@@ -3,7 +3,7 @@
 ## PASO 1: Verifica los cambios
 
 ```bash
-cd /Users/ianmont/Dev/rafg
+cd /Users/ianmont/Dev/ragf
 git status
 git diff shared/models.py
 git diff gateway/decision_engine.py
@@ -77,7 +77,7 @@ git push origin main
 
 ```bash
 # Abre en tu navegador:
-open https://github.com/cronocom/rafg/commits/main
+open https://github.com/cronocom/ragf/commits/main
 ```
 
 ---
